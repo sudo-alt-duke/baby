@@ -12,3 +12,7 @@ Since I can't remember them, just google it.
 Once you did that, run the python file and get a link to the bot.
 # What do you do with it
 It's a general purpose bot, it's meant to be funny and a gimmick bot for the whole family.
+> I have no idea, neither do I care about what people do with my bot.
+> Contact me on soybooru at margetock
+> 
+![baba](https://soyjakwiki.org/images/9/9f/Babyjak.png)
