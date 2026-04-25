@@ -88,7 +88,6 @@ class BabyButtonView(ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.click_count = 0
-        self.add_item(ui.Button(label="join the discord", url="dead link", style=discord.ButtonStyle.link))
     
     @ui.button(label="Start Spam", style=discord.ButtonStyle.green, custom_id="baby_spam_button")
     async def start_spam_button(self, interaction: discord.Interaction, button: ui.Button):
@@ -122,7 +121,6 @@ class SayButtonView(ui.View):
         super().__init__(timeout=None)
         self.user_text = user_text
         self.click_count = 0
-        self.add_item(ui.Button(label="join the discord", url="dead link", style=discord.ButtonStyle.link))
     
     @ui.button(label="Start Spam", style=discord.ButtonStyle.green, custom_id="say_spam_button")
     async def start_spam_button(self, interaction: discord.Interaction, button: ui.Button):
