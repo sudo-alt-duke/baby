@@ -49,6 +49,15 @@ IMAGE_LINKS = [
     "https://files.catbox.moe/x8alvd.gif"
 ]
 
+CUSTOM_LINKS = [
+    "https://files.catbox.moe/3e028g.mp4",
+    "https://files.catbox.moe/xab64u.mp4",
+    "https://files.catbox.moe/nggvpv.mp4",
+    "https://files.catbox.moe/o4jre2.mp4"
+]
+
+LINKS_PER_MESSAGE = 2
+
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
@@ -84,6 +93,23 @@ class SayModal(ui.Modal, title="Enter your message"):
         )
 
 
+class BabyCustomModal(ui.Modal, title="Enter your message"):
+    user_input = ui.TextInput(
+        label="Your message",
+        placeholder="Text to send with the images...",
+        required=True,
+        max_length=1000
+    )
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        view = BabyCustomButtonView(self.user_input.value)
+        await interaction.response.send_message(
+            "Click the button to send the images!",
+            ephemeral=True,
+            view=view
+        )
+
+
 class BabyButtonView(ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -100,20 +126,46 @@ class BabyButtonView(ui.View):
                 random_words = " ".join(random.sample(BABY_WORDS, 10))
                 msg = f"{random_words}\n\n" + "\n".join(IMAGE_LINKS)
                 await interaction.followup.send(msg)
-                print(f"sent #{i+1}")
                 if i < message_count - 1:
                     await asyncio.sleep(0.5)
             except discord.errors.HTTPException as e:
                 if e.status == 429:
                     await asyncio.sleep(e.retry_after if hasattr(e, 'retry_after') else 1)
                 else:
-                    print(f'http error: {e}')
                     break
-            except Exception as e:
-                print(f'error: {e}')
+            except Exception:
                 break
         
         self.click_count += 1
+
+
+class BabyCustomButtonView(ui.View):
+    def __init__(self, custom_text):
+        super().__init__(timeout=None)
+        self.custom_text = custom_text
+
+    @ui.button(label="Send Images", style=discord.ButtonStyle.blurple, custom_id="baby_custom_button")
+    async def send_images_button(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.defer(ephemeral=False)
+
+        shuffled = CUSTOM_LINKS.copy()
+        random.shuffle(shuffled)
+
+        chunks = [shuffled[i:i+LINKS_PER_MESSAGE] for i in range(0, len(shuffled), LINKS_PER_MESSAGE)]
+
+        for i, chunk in enumerate(chunks):
+            try:
+                msg = f"{self.custom_text}\n" + "\n".join(chunk)
+                await interaction.followup.send(msg)
+                if i < len(chunks) - 1:
+                    await asyncio.sleep(0.5)
+            except discord.errors.HTTPException as e:
+                if e.status == 429:
+                    await asyncio.sleep(e.retry_after if hasattr(e, 'retry_after') else 1)
+                else:
+                    break
+            except Exception:
+                break
 
 
 class SayButtonView(ui.View):
@@ -131,17 +183,14 @@ class SayButtonView(ui.View):
         for i in range(message_count):
             try:
                 await interaction.followup.send(self.user_text)
-                print(f"sent #{i+1}")
                 if i < message_count - 1:
                     await asyncio.sleep(0.5)
             except discord.errors.HTTPException as e:
                 if e.status == 429:
                     await asyncio.sleep(e.retry_after if hasattr(e, 'retry_after') else 1)
                 else:
-                    print(f'http error: {e}')
                     break
-            except Exception as e:
-                print(f'error: {e}')
+            except Exception:
                 break
         
         self.click_count += 1
@@ -159,10 +208,18 @@ async def on_ready():
 async def baby_command(interaction: discord.Interaction):
     view = BabyButtonView()
     await interaction.response.send_message(
-        "Click the button below to start spamming 3 messages with random words and images!",
+        "begin the spam",
         ephemeral=True,
         view=view
     )
+
+
+@app_commands.command(name="babycustom", description="this randomizes and sends images o algo")
+@app_commands.allowed_installs(guilds=True, users=True)
+@app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+async def babycustom_command(interaction: discord.Interaction):
+    modal = BabyCustomModal()
+    await interaction.response.send_modal(modal)
 
 
 @app_commands.command(name="stop", description="it doesnt work geg")
@@ -173,7 +230,7 @@ async def stop_baby(interaction: discord.Interaction):
         await interaction.response.send_message('Baby spam is not currently running.', ephemeral=True)
         return
     bot.is_spamming = False
-    await interaction.response.send_message('Stopping baby spam!')
+    await interaction.response.send_message('stoppedcado')
 
 
 @app_commands.command(name="ping", description="up status")
@@ -193,11 +250,10 @@ async def say2_command(interaction: discord.Interaction):
 
 
 bot.tree.add_command(baby_command)
+bot.tree.add_command(babycustom_command)
 bot.tree.add_command(stop_baby)
 bot.tree.add_command(ping)
 bot.tree.add_command(say2_command)
 
 if __name__ == '__main__':
     bot.run(TOKEN)
-    
-    # made by margetock
